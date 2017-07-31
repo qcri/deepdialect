@@ -15,13 +15,15 @@ from keras.layers import Flatten
 from keras.callbacks import ModelCheckpoint
 from keras.optimizers import Adam
 from keras.models import Model
+from keras.callbacks import ModelCheckpoint
+from keras.callbacks import EarlyStopping
 import numpy as np
 import sys
 from results import report
 
 sequence_length=100
 drop = 0.5
-nb_epoch = 80
+nb_epoch = 50
 batch_size = 32
 embedding_dim = 256
 filter_sizes = [3,4,5]
@@ -56,11 +58,17 @@ output = Dense(output_dim=5, activation='softmax')(dropout)
 # this creates a model that includes
 model = Model(input=inputs, output=output)
 
-checkpoint = ModelCheckpoint('weights.{epoch:03d}-{val_acc:.4f}.hdf5', monitor='val_acc', verbose=1, save_best_only=True, mode='auto')
+
+earlystopper = EarlyStopping(monitor='val_loss', min_delta=0,
+                             patience=1, verbose=1, mode='auto')
+
+checkpoint = ModelCheckpoint(filepath="./weights_lstm.hdf5", monitor='val_acc', verbose=1, save_best_only=True, mode='auto')
 adam = Adam(lr=1e-4, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
 
+model.summary()
+
 model.compile(optimizer=adam, loss='categorical_crossentropy', metrics=['accuracy'])
-model.fit(train_vec, train_labels, batch_size=batch_size, epochs=nb_epoch, verbose=1, callbacks=[checkpoint], validation_data=(dev_vec, dev_labels))  # starts training
+model.fit(train_vec, train_labels, batch_size=batch_size, epochs=nb_epoch, verbose=1, callbacks=[checkpoint,earlystopper], validation_data=(dev_vec, dev_labels))  # starts training
 
 
 

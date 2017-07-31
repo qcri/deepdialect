@@ -22,7 +22,7 @@ def report (pred,test_labels):
     np.savetxt('prob.out', prob, delimiter=' ') 
     
     test_classes = np.argmax(prob, axis=1)
-    np.savetxt('classes.out2', test_classes, delimiter=' ')
+    np.savetxt('classes.out', test_classes, delimiter=' ')
     
 
     test_labels = np.argmax(test_labels, axis=1) # to remove the Keras to_categorical
