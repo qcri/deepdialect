@@ -3,6 +3,8 @@ from sklearn.metrics import classification_report
 from sklearn.metrics import precision_score
 from sklearn.metrics import recall_score
 from sklearn.metrics import f1_score
+from keras.models import load_model
+import h5py
 import math
 import numpy as np
 import sys
@@ -10,8 +12,22 @@ import sys
 def sigmoid(x):
     return 1 / (1 + math.exp(-x))
 
+    
 
-def report (pred,test_labels):
+
+def report (test_vec,test_labels,best_model,ext):
+    
+    prob_out='prob.out.'+ext
+    pred_out='pred.out.'+ext
+    class_out='class.out.'+ext
+    
+    #load models
+    model = load_model(best_model)
+    
+    #save predictions
+    pred = model.predict(test_vec)
+    np.savetxt(pred_out, pred, delimiter=' ')    
+    
     prob = np.copy(pred)
     i=0
     for row in prob: 
@@ -19,10 +35,14 @@ def report (pred,test_labels):
       norm = [float(i)/sum(raw) for i in raw]
       prob[int(i)]=norm
       i=i+1
-    np.savetxt('prob.out', prob, delimiter=' ') 
+    
+    #save prob
+    np.savetxt(prob_out, prob, delimiter=' ') 
+    
     
     test_classes = np.argmax(prob, axis=1)
-    np.savetxt('classes.out', test_classes, delimiter=' ')
+    #save classes
+    np.savetxt(class_out, test_classes, delimiter=' ')
     
 
     test_labels = np.argmax(test_labels, axis=1) # to remove the Keras to_categorical

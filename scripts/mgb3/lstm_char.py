@@ -26,9 +26,10 @@ from results import report
 
 sequence_length=1000
 drop = 0.5
-nb_epoch = 10
+nb_epoch = 100
 batch_size = 32
-
+best_model="./weights_lstm_char.hdf5"
+ext='lst_char'
 
 
 
@@ -37,7 +38,7 @@ train_vec, train_labels, dev_vec, dev_labels, test_vec, test_labels, vocabulary_
 
 
 
-checkpointer = ModelCheckpoint(filepath="./weights_lstm.hdf5", monitor='val_acc', 
+checkpointer = ModelCheckpoint(filepath=best_model, monitor='val_acc', 
                                verbose=1, save_best_only=True, mode='auto')
 
 earlystopper = EarlyStopping(monitor='val_loss', min_delta=0,
@@ -46,7 +47,7 @@ earlystopper = EarlyStopping(monitor='val_loss', min_delta=0,
 inputs = Input(shape=(sequence_length,), dtype='int32')
 embed  = Embedding(sequence_length,256) (inputs)
 lstm   = LSTM(64, dropout=0.2, recurrent_dropout=0.2) (embed)
-fc1    = Dense(1, activation='sigmoid') (lstm)
+fc1    = Dense(32, activation='sigmoid') (lstm)
 outputs = Dense(output_dim=5, activation='softmax')(fc1)
 model = Model(inputs=inputs, outputs=outputs)
 
@@ -65,12 +66,11 @@ model.fit(train_vec, train_labels, batch_size=batch_size,
 
 #evaluate the model
 scores = model.evaluate(test_vec, test_labels)
-
-#print scores
 print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
 
-#calculate predictions
-pred = model.predict(test_vec,batch_size=32, verbose=10)
-np.savetxt('pred.out', pred, delimiter=' ') 
 
-report (pred,test_labels)
+#detailed report
+report (test_vec,test_labels,best_model,ext)
+
+
+          

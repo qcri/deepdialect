@@ -13,6 +13,8 @@ import numpy as np
 
 batch_size=32
 nb_epoch=50
+best_model="./weights_dnn_ivec.hdf5"
+ext='nn_ivec'
 
 print 'Loading data'
 train_vec, train_labels, dev_vec, dev_labels, test_vec, test_labels, vocabulary_size = load_data(type="ivec")
@@ -31,7 +33,7 @@ model = Model(input=inputs, output=outputs)
 earlystopper = EarlyStopping(monitor='val_loss', min_delta=0,
                              patience=1, verbose=1, mode='auto')
 
-checkpoint = ModelCheckpoint(filepath="./weights_dnn_ivec.hdf5", monitor='val_acc', verbose=1, 
+checkpoint = ModelCheckpoint(filepath=best_model, monitor='val_acc', verbose=1, 
                              save_best_only=True, mode='auto')
 adam = Adam(lr=1e-4, beta_1=0.9, beta_2=0.999, epsilon=1e-08)
 
@@ -43,12 +45,8 @@ model.fit(train_vec, train_labels, batch_size=batch_size, epochs=nb_epoch, verbo
 
 #evaluate the model
 scores = model.evaluate(test_vec, test_labels)
-
-#print scores
 print("\n%s: %.2f%%" % (model.metrics_names[1], scores[1]*100))
 
-#calculate predictions
-pred = model.predict(test_vec,batch_size=32, verbose=10)
-np.savetxt('pred.out', pred, delimiter=' ') 
 
-report (pred,test_labels)
+#detailed report
+report (test_vec,test_labels,best_model,ext)
